@@ -49,9 +49,10 @@ async function onStart({ bot, message, msg, chatId, args, usages }) {
 
     } catch (e) {
       console.error("API call error:", e.message || e);
+      
       await bot.sendMessage(
         chatId,
-        "❌ An error occurred. The API might be down or the image is invalid.", {
+        `❌ An error occurred: ${e.message}`, {
           reply_to_message_id: msg.message_id
         }
       );
