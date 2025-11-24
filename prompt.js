@@ -1,68 +1,53 @@
-const a = require("axios");
+const axios = require("axios");
+const path = require("path");
+const fs = require("fs");
 
 const nix = {
   name: "prompt",
-  aliases: ["p"],
   version: "0.0.1",
+  aliases: ["p"],
+  description: "Get a description or response for a replied image using AI.",
   author: "ArYAN",
-  category: "ai",
-  prefix: true,
-  role: 0,
   cooldown: 5,
-  description: "Get a description or answer from an image.",
-  guide: "{p}prompt <your_prompt> (reply to an image)",
+  role: 0,
+  prefix: true,
+  category: "ai",
+  guide: "Use: {pn} <question> by replying to an image.\nExample: {pn} what is special about this?"
 };
 
-async function onStart({ bot, message, msg, chatId, args, usages }) {
-  const u = "http://65.109.80.126:20409/aryan/prompt";
-  const p = args.join(" ") || "Describe this image";
+async function onStart({ bot, message, msg, chatId, args }) {
+  const apiUrl = "http://65.109.80.126:20409/aryan/prompt";
+  const question = args.join(" ") || "Describe this image in detail";
+  
+  const repliedMsg = msg.reply_to_message;
 
-  if (msg.reply_to_message && msg.reply_to_message.photo) {
+  if (repliedMsg && repliedMsg.photo) {
     try {
-      const photo = msg.reply_to_message.photo;
-      const fileId = photo[photo.length - 1].file_id;
+      const fileId = repliedMsg.photo[repliedMsg.photo.length - 1].file_id;
       const imageUrl = await bot.getFileLink(fileId);
 
-      const r = await a.get(u, {
-        params: { imageUrl: imageUrl, prompt: p }
+      const response = await axios.get(apiUrl, {
+        params: { imageUrl: imageUrl, prompt: question }
       });
 
-      const x = r.data.response || "No response from API.";
-
-      if (r.data.status === false) {
-        await bot.sendMessage(
-          chatId,
-          `❌ API Error: ${r.data.message}`, {
-            reply_to_message_id: msg.message_id
-          }
-        );
-        return;
+      const result = response.data.response || "No response received.";
+      
+      if (response.data.status === false) {
+        return message.reply(`❌ API Error: ${response.data.message}`);
       }
 
-      await bot.sendMessage(
-        chatId,
-        x, {
-          parse_mode: "Markdown",
-          reply_to_message_id: msg.message_id
-        }
-      );
-
-    } catch (e) {
-      console.error("API call error:", e.message || e);
+      await message.reply(result);
       
-      await bot.sendMessage(
-        chatId,
-        `❌ An error occurred: ${e.message}`, {
-          reply_to_message_id: msg.message_id
-        }
-      );
+    } catch (e) {
+      console.error("Local API call error:", e.message || e);
+      return message.reply("❌ An error occurred while communicating with the image analysis API.");
     }
   } else {
-    return usages();
+    message.reply("⚠️ Please reply to an image using this command.");
   }
 }
 
 module.exports = {
-  onStart,
-  nix
+  nix,
+  onStart
 };
