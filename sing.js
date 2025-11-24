@@ -25,7 +25,7 @@ async function onStart({ bot, message, msg, chatId, args, usages }) {
   try {
     i = await bot.sendMessage(
       chatId,
-      "🎵 Searching and downloading... Please wait.", {
+      "🎵 Please wait...", {
         reply_to_message_id: msg.message_id
       }
     );
