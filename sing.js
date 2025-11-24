@@ -4,8 +4,8 @@ const c = require("path");
 const d = require("yt-search");
 
 const nix = {
-  name: "sing",
-  aliases: ["music", "song"],
+  name: "sp",
+  aliases: ["mc", "so"],
   version: "0.0.1",
   author: "ArYAN",
   cooldown: 10,
